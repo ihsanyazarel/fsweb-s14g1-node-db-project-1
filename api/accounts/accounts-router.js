@@ -1,27 +1,60 @@
-const router = require('express').Router()
+const router = require('express').Router();
+const { checkAccountPayload, checkAccountId, checkAccountNameUnique } = require('./accounts-middleware');
+const accModel = require("./accounts-model");
 
-router.get('/', (req, res, next) => {
-  // KODLAR BURAYA
+// get all accounts
+router.get('/', async (req, res, next) => {
+  try {
+    const accounts = await accModel.getAll();
+    res.json(accounts);
+  } catch (error) {
+    next(error);
+  }
 })
 
-router.get('/:id', (req, res, next) => {
-  // KODLAR BURAYA
+// get account by id
+router.get('/:id', checkAccountId, async (req, res, next) => {
+  try {
+    // const account = await accModel.getById(req.params.id);
+    res.json(req.account);
+  } catch (error) {
+    next(error);
+  }
 })
 
-router.post('/', (req, res, next) => {
-  // KODLAR BURAYA
+// create account
+router.post('/', checkAccountPayload, checkAccountNameUnique,  async (req, res, next) => {
+  try {
+    const account = await accModel.create(req.newUser);
+    res.json(account);
+  } catch (error) {
+    next(error);
+  }
 })
 
-router.put('/:id', (req, res, next) => {
-  // KODLAR BURAYA
+// update account
+router.put('/:id', checkAccountPayload, checkAccountId, checkAccountNameUnique, async (req, res, next) => {
+  try {
+    const account = await accModel.updateById(req.params.id, req.newUser);
+    res.json(account);
+  } catch (error) {
+    next(error);
+  }
 });
 
-router.delete('/:id', (req, res, next) => {
-  // KODLAR BURAYA
+// delete account
+router.delete('/:id', checkAccountId, async (req, res, next) => {
+  try {
+    const deletedAccount = await accModel.deleteById(req.params.id);
+    res.json(deletedAccount);
+  } catch (error) {
+    next(error);
+  }
 })
 
+// error mw
 router.use((err, req, res, next) => { // eslint-disable-line
-  // KODLAR BURAYA
+  res.status(err.status || 500).json({message: err.message || "Sunucu Hatası!"});
 })
 
 module.exports = router;
